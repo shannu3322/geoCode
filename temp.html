@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            height: 100vh;  
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .error-message {
+           color: red;
+           font-size: 12px;
+           margin-top: 5px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        #weather-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        input, select {
+            margin-top: 5px;
+            padding: 8px;
+            width: 300px;
+            box-sizing: border-box;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #weather-container {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: left;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Weather API</h1>
+
+    <form id="weather-form">
+        <label for="country">Country:</label>
+        <input  type="text" id="country" required>
+        <p id="caerror" class="error-message"></p>
+        
+        <label for="state">State:</label>
+        <input type="text" id="state" required>
+        <p id="serror" class="error-message"></p>
+        
+        <label for="city">City:</label>
+        <input type="text" id="city" required>
+        <p id="cierror" class="error-message"></p>
+
+        <button type="submit" onclick="event.preventDefault(); validateAndFetchWeather()">Get Weather</button>
+       
+   
+    </form>
+ 
+    <div id="weather-container"></div>
+
+    <script>
+        
+        function validateAndFetchWeather() {
+        const countryInput = document.getElementById('country');
+        const stateInput = document.getElementById('state');
+        const cityInput = document.getElementById('city');
+
+        const country = countryInput.value.trim();
+        const state = stateInput.value.trim();
+        const city = cityInput.value.trim();
+        // Check if all input fields are empty and display error message accordingly
+if (!country && !state && !city) {
+    document.getElementById("caerror").innerHTML = "Please fill all the fields";
+    document.getElementById("serror").innerHTML = "Please fill all the fields";
+    document.getElementById("cierror").innerHTML = "Please fill all the fields";
+    return;
+} else {
+    // Clear error messages if any of the fields are not empty
+    document.getElementById("caerror").innerHTML = "";
+    document.getElementById("serror").innerHTML = "";
+    document.getElementById("cierror").innerHTML = "";
+}
+
+
+ // Check if any input field is empty and display error messages accordingly
+    if (!country) {
+        document.getElementById("caerror").innerHTML = "Country is required";
+        return;
+    } else {
+        document.getElementById("caerror").innerHTML = "";
+    }
+
+    if (!state && !city) {
+        document.getElementById("serror").innerHTML = "State is required";
+        document.getElementById("cierror").innerHTML = "City is required"
+        return;
+    } else {
+        document.getElementById("serror").innerHTML = "";
+    }
+
+    if (!city ) {
+        document.getElementById("cierror").innerHTML = "City is required";
+        return;
+    } else {
+        document.getElementById("cierror").innerHTML = "";
+    }
+
+        getWeather(country, state, city);
+    }
+
+    const inputs = document.querySelectorAll('input');
+inputs.forEach(input => {
+    input.addEventListener('input', function() {
+        const value = this.value.trim();
+        if (!isNaN(value) && value !== '') {
+            // Display error message under the input field
+            this.nextElementSibling.innerHTML = "Please enter valid input (alphabets and spaces only).";
+            // Clear the input field
+            this.value = '';
+            console.log("Please enter valid input")
+        } else {
+            // Clear the error message if input is valid
+            this.nextElementSibling.innerHTML = "";
+        }
+    });
+});
+
+        function getWeather(country, state, city) {
+            const apiKey = 'c67cc49ab90a5ceea44e05514d673111';
+
+            const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city},${state},${country}&appid=${apiKey}`;
+
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    displayWeather(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching weather data:', error);
+                });
+        }
+
+        function displayWeather(data) {
+            const weatherContainer = document.getElementById('weather-container');
+
+            if (data.cod === '404') {
+                weatherContainer.innerHTML = `<p>${data.message}</p>`;
+            } else {
+                const temperature = Math.round(data.main.temp - 273.15); // Convert from Kelvin to Celsius
+
+                weatherContainer.innerHTML = `
+                    <h2>Weather in ${data.name}, ${data.sys.country}</h2>
+                    <p>Temperature: ${temperature}°C</p>
+                    <p>Weather: ${data.weather[0].description}</p>
+                `;
+            }
+        }
+    </script>
+
+</body>
+</html>
